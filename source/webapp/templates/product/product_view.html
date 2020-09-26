@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Проект {{ product.title }}{% endblock %}
+
+{% block menu %}
+{#    <li><a href="{% url 'product_update' review.pk %}">Изменить</a></li>#}
+{#    <li><a href="{% url 'product_delete' review.pk %}">Удалить</a></li>#}
+{#    <li><a href="{% url 'review_create' review.pk %}">Добавить задачу</a></li>#}
+    {% if perms.webapp.create_review and request.user in product.review.user.all %}<li><a href="{% url 'product_review_create' product.pk %}">Добавить задачу</a></li>{% endif %}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ product.name}}</h1>
+    <p><b>Категория:</b> {{ product.category }}</p>
+    <p><b>Описание:</b> {{ product.description }}</p>
+    <p><b>Фото товара:</b> {{ product.image }}</p>
+
+            <h3>Отзывы:</h3>
+
+        {% for review in reviews %}
+               <h4><a href="{% url "review_view" review.pk %}">{{ review.author }}</a></h4>
+                <div class="pre">{{ review.review }}</div>
+            {% if request.user.is_authenticated %}
+                    {% if perms.webapp.update_review and request.user in product.review.user.all %}<p><a href="{% url 'review_update' review.pk %}">Изменить</a>{% endif %} | {% if perms.webapp.delete_review and request.user in product.review.user.all %}<a href="{% url 'review_delete' review.pk %}">Удалить</a>{% endif %}</p>
+            {% endif %}
+                <hr>
+        {% empty %}
+            <p>Нет отзывов</p>
+        {% endfor %}
+        {% if is_paginated %}
+            {% include 'partial/pagination.html' %}
+        {% endif %}
+{% endblock %}

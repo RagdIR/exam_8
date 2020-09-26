@@ -15,8 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from webapp.views.product_views import IndexView, ProductView, ProductUpdateView, ProductDeleteView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('accounts.urls'))
-]
+    path('accounts/', include('accounts.urls')),
+
+    path('', IndexView.as_view(), name='index'),
+    path('product/', include([
+            path('<int:pk>/', include([
+                path('', ProductView.as_view(), name='product_view'),
+                path('update/', ProductUpdateView.as_view(), name='product_update'),
+                path('delete/', ProductDeleteView.as_view(), name='product_delete'),
+]))]))]

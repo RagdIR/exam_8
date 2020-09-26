@@ -18,12 +18,12 @@
     <nav class="navbar">
         <div class="container">
             <ul class="menu">
-                <li><a href="{% url 'webapp:index' %}">Home</a></li>
+                <li><a href="{% url 'index' %}">Главная</a></li>
                 {% if request.user.is_authenticated %}
-                    <li><a href="{% url 'webapp:product_create' %}">Add Article</a></li>
+{#                    <li><a href="{% url 'webapp:product_create' %}">Add product</a></li>#}
                     {% block menu %}{% endblock %}
                     <li><a href="{% url 'accounts:detail' request.user.pk %}">
-                        Привет, {{ request.user.get_full_name|default:request.user.username }}
+                        {{ request.user.get_full_name|default:request.user.username }}
                     </a></li>
                 {% endif %}
                 {% block auth_menu %}

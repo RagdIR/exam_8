@@ -16,12 +16,13 @@ class IndexView(ListView):
     model = Product
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        return super().get_context_data(object_list=object_list)
+        return super().get_context_data(object_list=object_list, **kwargs)
     
     def get_queryset(self):
         data = Product.objects.all()
         return data
-    
+
+
 class ProductView(DetailView):
     template_name = 'product/product_view.html'
     model = Product
@@ -30,7 +31,6 @@ class ProductView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         reviews, page, is_paginated = self.paginate_reviews(self.object)
         context['reviews'] = reviews
         context['page_obj'] = page
