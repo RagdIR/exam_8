@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from webapp.views.product_views import IndexView, ProductView, ProductUpdateView, ProductDeleteView
+from webapp.views.review_views import ReviewView, ReviewCreateView, ReviewUpdateView, ReviewDeleteView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +28,15 @@ urlpatterns = [
                 path('', ProductView.as_view(), name='product_view'),
                 path('update/', ProductUpdateView.as_view(), name='product_update'),
                 path('delete/', ProductDeleteView.as_view(), name='product_delete'),
-                path('reviews/add/', ProductReviewCreateView.as_view(),
-                 name='article_comment_add')
-]))]))]
+    ])),
+    path('review/', include([
+        path('<int:pk>/', include([
+            path('', ReviewView.as_view(), name='review_view'),
+            path('', ReviewCreateView.as_view(), name='review_create'),
+            path('', ReviewUpdateView.as_view(), name='review_update'),
+            path('', ReviewDeleteView.as_view(), name='review_delete'),
+
+            ]))
+        ]))
+    ]))
+]

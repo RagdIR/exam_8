@@ -1,17 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Отзыв {{ review.summary }}{% endblock %}
+{% block title %}Отзыв{% endblock %}
 
 {% block menu %}
     <li><a href="{% url 'review_update' review.pk %}">Изменить</a></li>
     <li><a href="{% url 'review_delete' review.pk %}">Удалить</a></li>
-    <li><a href="{% url 'project_view' review.project.pk %}">Вернуться к товару</a></li>
+    <li><a href="{% url 'product_view' review.product.pk %}">Вернуться к товару</a></li>
 {% endblock %}
 
 {% block content %}
-    <h1>{{ review.summary}}</h1>
+    <h1>{{ review.review}}</h1>
     <p><b>{{ review.author }}</b></p>
-    <p><b>Отзыв:</b> {{ review.review }}</p>
     <p><b>Оценка:</b> {{ review.rate }}</p>
 
 {% endblock %}

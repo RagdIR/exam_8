@@ -56,12 +56,12 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     paginate_related_orphans = 0
 
     def get_context_data(self, **kwargs):
-        projects = self.object.projects.all()
-        paginator = Paginator(projects, self.paginate_related_by, orphans=self.paginate_related_orphans)
+        reviews = self.object.reviews.all()
+        paginator = Paginator(reviews, self.paginate_related_by, orphans=self.paginate_related_orphans)
         page_number = self.request.GET.get('page', 1)
         page = paginator.get_page(page_number)
         kwargs['page_obj'] = page
-        kwargs['projects'] = page.object_list
+        kwargs['reviews'] = page.object_list
         kwargs['is_paginated'] = page.has_other_pages()
         return super().get_context_data(**kwargs)
 

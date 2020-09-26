@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+    {% for item in users %}
+        <a href="{% url 'accounts:detail' item.pk %}">{{ item.username|default:item.get_full_name }}</a>
+    {% endfor %}
+{% endblock %}

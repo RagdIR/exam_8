@@ -1,0 +1,23 @@
+{% if is_paginated %}
+    {% include 'partial/pagination.html' %}
+{% endif %}
+
+    {% for review in reviews %}
+        <div class="box">
+            <h3><a href="{% url "review_view" product.pk %}">{{ review.review }}</a></h3>
+            <p>
+                <a href="#">{{ product.user }}</a>
+            </p>
+            {% if perms.webapp.change_review or product.user == request.user %}
+                <p><a href="{% url 'review_update' product.pk %}">Изменить</a></p>
+            {% endif %}
+            {% if perms.webapp.delete_review or product.user == request.user %}
+                <p><a href="{% url 'review_delete' product.pk %}">Удалить</a></p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <h2 class="text-center">Нет отзывов</h2>
+    {% endfor %}
+{% if is_paginated %}
+    {% include 'partial/pagination.html' %}
+{% endif %}

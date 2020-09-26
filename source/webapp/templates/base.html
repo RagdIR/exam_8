@@ -19,9 +19,11 @@
         <div class="container">
             <ul class="menu">
                 <li><a href="{% url 'index' %}">Главная</a></li>
-                {% if request.user.is_authenticated %}
-{#                    <li><a href="{% url 'webapp:product_create' %}">Add product</a></li>#}
+                {% if perms.webapp.create_product and request.user in product.review.user.all %}
+                    <li><a href="{% url 'product_create' %}">Добавить товар</a></li>
+                {% endif %}
                     {% block menu %}{% endblock %}
+                {% if request.user.is_authenticated %}
                     <li><a href="{% url 'accounts:detail' request.user.pk %}">
                         {{ request.user.get_full_name|default:request.user.username }}
                     </a></li>
@@ -34,9 +36,9 @@
                         <li><a href="{% url 'accounts:create' %}?next={{ request.get_full_path }}">Sign Up</a></li>
                     {% endif %}
                 {% endblock %}
-{#                {% if not request.user.is_authenticated %}#}
-{#                    <li><a href="{% url 'accounts:password_reset_email' %}">Reset Password</a></li>#}
-{#                {% endif %}#}
+                {% if not request.user.is_authenticated %}
+                    <li><a href="{% url 'accounts:password_reset_email' %}">Reset Password</a></li>
+                {% endif %}
             </ul>
         </div>
     </nav>

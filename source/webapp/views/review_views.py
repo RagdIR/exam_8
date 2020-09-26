@@ -24,15 +24,15 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
     form_class = ReviewForm
     #
     # def test_func(self):
-    #     return self.request.user.has_perm('webapp.delete_review') and self.request.user in self.get_object().project.user.all()
+    #     return self.request.user.has_perm('webapp.delete_review') and self.request.user in self.get_object().product.user.all()
 
     def form_valid(self, form):
-        project = get_object_or_404(Product, pk=self.kwargs.get('pk'))
+        product = get_object_or_404(Product, pk=self.kwargs.get('pk'))
         review = form.save(commit=False)
-        review.project = project
+        review.product = product
         review.author = self.request.user
         review.save()
-        return redirect('project_view', pk=project.pk)
+        return redirect('product_view', pk=product.pk)
 
 
 class ReviewUpdateView(UserPassesTestMixin, UpdateView):
@@ -41,10 +41,10 @@ class ReviewUpdateView(UserPassesTestMixin, UpdateView):
     form_class = ReviewForm
 
     def test_func(self):
-        return self.request.user.has_perm('webapp.update_review') and self.request.user in self.get_object().project.user.all()
+        return self.request.user.has_perm('webapp.update_review') and self.request.user in self.get_object().product.user.all()
 
     def get_success_url(self):
-        return reverse('project_view', kwargs={'pk': self.object.project.pk})
+        return reverse('product_view', kwargs={'pk': self.object.product.pk})
 
 
 class ReviewDeleteView(UserPassesTestMixin, DeleteView):
@@ -53,7 +53,7 @@ class ReviewDeleteView(UserPassesTestMixin, DeleteView):
     context_object_name = 'review'
 
     def test_func(self):
-        return self.request.user.has_perm('webapp.delete_review') and self.request.user in self.get_object().project.user.all()
+        return self.request.user.has_perm('webapp.delete_review') and self.request.user in self.get_object().product.user.all()
 
     def get_success_url(self):
-        return reverse('project_view', kwargs={'pk': self.object.project.pk})
+        return reverse('product_view', kwargs={'pk': self.object.product.pk})

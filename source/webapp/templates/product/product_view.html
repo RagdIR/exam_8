@@ -4,7 +4,7 @@
 
 {% block menu %}
     {% if request.user.is_authenticated %}
-        <li><a href="{% url 'product_review_create' product.pk %}">Добавить отзыв</a></li>
+        <li><a href="{% url 'review_create' product.pk %}">Добавить отзыв</a></li>
     {% endif %}
 {% endblock %}
 
@@ -14,8 +14,6 @@
     <p><b>Описание:</b> {{ product.description }}</p>
     {% if product.product.image %}
         <p><b>Фото товара:<img src="{{ product.image.url }}" width="250" height="250" alt="product picture"></b></p>
-{#    {% else %}#}
-{#        <p>{{ <img src="{{ article.img.url }}"> }}</p>#}
     {% endif %}
 
             <h3>Отзывы:</h3>
