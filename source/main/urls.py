@@ -27,4 +27,6 @@ urlpatterns = [
                 path('', ProductView.as_view(), name='product_view'),
                 path('update/', ProductUpdateView.as_view(), name='product_update'),
                 path('delete/', ProductDeleteView.as_view(), name='product_delete'),
+                path('reviews/add/', ProductReviewCreateView.as_view(),
+                 name='article_comment_add')
 ]))]))]

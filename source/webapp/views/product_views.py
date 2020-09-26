@@ -28,6 +28,7 @@ class ProductView(DetailView):
     model = Product
     paginate_reviews_by = 2
     paginate_reviews_orphans = 0
+    context_object_name = 'product'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -38,7 +39,7 @@ class ProductView(DetailView):
         return context
 
     def paginate_reviews(self, product):
-        reviews = product.reviews.all().order_by('-created_at')
+        reviews = product.reviews.all()
         if reviews.count() > 0:
             paginator = Paginator(reviews, self.paginate_reviews_by, orphans=self.paginate_reviews_orphans)
             page_number = self.request.GET.get('page', 1)

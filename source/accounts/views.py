@@ -1,38 +1,31 @@
-from django.contrib.auth import get_user_model, authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.models import User
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.views import PasswordChangeView, \
-    PasswordResetView, PasswordResetConfirmView
-from django.core.mail import send_mail
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.urls import reverse, reverse_lazy
-from django.views.generic import View, FormView, DetailView, CreateView, UpdateView
-from django.conf import settings
-
-from accounts.forms import MyUserCreationForm, UserChangeForm, ProfileChangeForm, \
-    PasswordChangeForm, PasswordResetEmailForm, PasswordResetForm
-from .models import AuthToken, Profile
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.urls import reverse
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from accounts.forms import MyUserCreationForm, PasswordChangeForm, ProfileChangeForm, UserChangeForm
 
 
-# def login_view(request):
-#     context = {}
-#     if request.method == 'POST':
-#         username = request.POST.get('username')
-#         password = request.POST.get('password')
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             return redirect('webapp:index')
-#         else:
-#             context['has_error'] = True
-#     return render(request, 'registration/login.html', context=context)
-# 
-# 
-# def logout_view(request):
-#     logout(request)
-#     return redirect('webapp:index')
+def login_view(request):
+    context = {}
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            return redirect('index')
+        else:
+            context['has_error'] = True
+
+    return render(request, 'registration/login.html', context=context)
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('index')
 
 
 class RegisterView(CreateView):
@@ -42,36 +35,17 @@ class RegisterView(CreateView):
 
     def form_valid(self, form):
         user = form.save()
-        if settings.ACTIVATE_USERS_EMAIL:
-            return redirect('webapp:index')
-        else:
-            login(self.request, user)
-            return redirect(self.get_success_url())
+        login(self.request, user)
+        email = form
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         next_url = self.request.GET.get('next')
         if not next_url:
             next_url = self.request.POST.get('next')
         if not next_url:
-            next_url = reverse('webapp:index')
+            next_url = reverse('index')
         return next_url
-
-
-class RegisterActivateView(View):
-    def get(self, request, *args, **kwargs):
-        token = AuthToken.get_token(self.kwargs.get('token'))
-        if token:
-            if token.is_alive():
-                self.activate_user(token)
-            token.delete()
-        return redirect('webapp:index')
-
-    def activate_user(self, token):
-        user = token.user
-        user.is_active = True
-        user.save()
-        Profile.objects.create(user=user)
-        login(self.request, user)
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -82,26 +56,31 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     paginate_related_orphans = 0
 
     def get_context_data(self, **kwargs):
-        articles = self.object.articles.order_by('-created_at')
-        paginator = Paginator(articles, self.paginate_related_by, orphans=self.paginate_related_orphans)
+        projects = self.object.projects.all()
+        paginator = Paginator(projects, self.paginate_related_by, orphans=self.paginate_related_orphans)
         page_number = self.request.GET.get('page', 1)
         page = paginator.get_page(page_number)
         kwargs['page_obj'] = page
-        kwargs['articles'] = page.object_list
+        kwargs['projects'] = page.object_list
         kwargs['is_paginated'] = page.has_other_pages()
-        if self.object == self.request.user:   # на странице пользователя показываем
-            kwargs['show_mass_delete'] = True  # массовое удаление только владельцу
         return super().get_context_data(**kwargs)
 
 
-class UserChangeView(UserPassesTestMixin, UpdateView):
+class UserList(PermissionRequiredMixin, ListView):
+    model = get_user_model()
+    template_name = 'user_list.html'
+    permission_required = 'accounts:perm_user'
+    context_object_name = 'users'
+
+
+class UserChangeView(LoginRequiredMixin, UpdateView):
     model = get_user_model()
     form_class = UserChangeForm
     template_name = 'user_change.html'
     context_object_name = 'user_obj'
 
-    def test_func(self):
-        return self.request.user == self.get_object()
+    def get_object(self, queryset=None):
+        return self.request.user
 
     def get_context_data(self, **kwargs):
         if 'profile_form' not in kwargs:
@@ -136,65 +115,16 @@ class UserChangeView(UserPassesTestMixin, UpdateView):
             form_kwargs['files'] = self.request.FILES
         return ProfileChangeForm(**form_kwargs)
 
-        # if self.request.method == 'POST':
-        #     form = ProfileChangeForm(instance=self.object, data=self.request.POST, 
-        #                                 files=self.request.FILES)
-        # else:
-        #     form = ProfileChangeForm(instance=self.object)
-        # return form
 
-
-class UserPasswordChangeView(LoginRequiredMixin, UpdateView):
+class UserPasswordChangeView(PermissionRequiredMixin, UpdateView):
     model = get_user_model()
     template_name = 'user_password_change.html'
     form_class = PasswordChangeForm
     context_object_name = 'user_obj'
+    permission_required = 'accounts:perm_user'
 
     def get_object(self, queryset=None):
         return self.request.user
 
-    def form_valid(self, form):
-        user = form.save()
-        update_session_auth_hash(self.request, user)
-        return HttpResponseRedirect(self.get_success_url())
-
     def get_success_url(self):
-        return reverse('accounts:detail', kwargs={'pk': self.object.pk})
-
-
-# class UserPasswordChangeView(PasswordChangeView):
-#     template_name = 'user_password_change.html'
-#
-#     def get_success_url(self):
-#         return reverse('accounts:detail', kwargs={'pk': self.request.user.pk})
-
-
-class UserPasswordResetEmailView(FormView):
-    form_class = PasswordResetEmailForm
-    template_name = 'password_reset_email.html'
-    success_url = reverse_lazy('webapp:index')
-
-    def form_valid(self, form):
-        form.send_email()
-        return super().form_valid(form)
-
-
-class UserPasswordResetView(UpdateView):
-    model = User
-    form_class = PasswordResetForm
-    template_name = 'password_reset.html'
-    success_url = reverse_lazy('accounts:login')
-
-    def get_object(self, queryset=None):
-        token = self.get_token()
-        if token and token.is_alive():
-            return token.user
-        raise Http404('Ссылка не существует или её срок действия истёк')
-
-    def form_valid(self, form):
-        token = self.get_token()
-        token.delete()
-        return super().form_valid(form)
-
-    def get_token(self):
-        return AuthToken.get_token(self.kwargs.get('token'))
+        return reverse('accounts:login')

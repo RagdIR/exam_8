@@ -1,7 +1,25 @@
+
 {% extends 'base.html' %}
 
-{% block title %}Hello{% endblock %}
+{% block title %}Товары{% endblock %}
 
 {% block content %}
-    <h1>Товары</h1>
+    <h1>Проекты</h1>
+    {% if is_paginated %}
+        {% include 'partial/pagination.html' %}
+    {% endif %}
+
+    {% for product in products %}
+        <h3><a href="{% url "product_view" product.pk %}">{{ product.name }}</a></h3>
+        <p>{{ product.image }}</p>
+        <p>Описание: {{ product.description }}</p>
+        {% if request.user.is_authenticated %}
+            {% if perms.webapp.change_product or product.user == request.user %}<p><a href="{% url 'product_update' product.pk %}">Изменить</a>{% endif %} | {% if perms.webapp.delete_product or product.user == request.user %}<a href="{% url 'product_delete' product.pk %}">Удалить</a></p>{% endif %}
+        {% endif %}
+        <hr>
+    {% endfor %}
+
+    {% if is_paginated %}
+        {% include 'partial/pagination.html' %}
+    {% endif %}
 {% endblock %}

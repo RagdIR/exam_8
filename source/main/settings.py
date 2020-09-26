@@ -124,7 +124,7 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/media/'
 
-LOGIN_REDIRECT_URL = 'webapp:index'
-LOGOUT_REDIRECT_URL = 'webapp:index'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'index'
 
 LOGIN_URL = 'accounts:login'
